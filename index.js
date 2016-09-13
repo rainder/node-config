@@ -67,6 +67,16 @@ module.exports = new class extends events.EventEmitter {
   }
 
   /**
+   * Alias of autoload
+   *
+   * @param schema
+   * @returns {*}
+   */
+  autoreload(schema) {
+    return this.autoload(schema);
+  }
+
+  /**
    *
    * @param path
    * @returns {*}
