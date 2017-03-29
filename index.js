@@ -56,6 +56,7 @@ module.exports = new class Config extends events.EventEmitter {
 
   /**
    *
+   * @param dirName
    * @returns {*}
    * @private
    */
