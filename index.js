@@ -5,45 +5,67 @@ const _ = require('lodash');
 const path = require('path');
 const config = require('config');
 const events = require('events');
+const watch = require('watch');
 
-let CONFIG = config.util.loadFileConfigs();
+const CONFIG$ = Symbol();
+const DIRS = ['config', 'config/local'];
 
-module.exports = new class extends events.EventEmitter {
+module.exports = new class Config extends events.EventEmitter {
   constructor() {
     super();
 
     this.autoloaders = [];
 
+    this[CONFIG$] = Config._loadConfig();
     this._initWatcher();
   }
 
-  _initWatcher() {
-    const configDir = this._getConfigDir();
-    const dirContents = fs.readdirSync(configDir);
-    const watchOptions = { persistent: false };
+  /**
+   *
+   */
+  static _loadConfig() {
+    const result = {};
 
-    const onChange = () => {
-      CONFIG = config.util.loadFileConfigs();
-      _.each(this.autoloaders, fn => fn());
+    DIRS.forEach((dir) => {
+      const configDir = Config._getConfigDir(dir);
 
-      this.emit('reload');
-    };
+      _.merge(result, config.util.loadFileConfigs(configDir));
+    });
 
-    for (let file of dirContents) {
-      if (/^\./.test(file)) {
-        continue;
-      }
-
-      fs.watchFile(path.resolve(configDir, file), watchOptions, onChange);
-    }
+    return result;
   }
 
-  _getConfigDir() {
-    const dir = path.join(process.cwd(), 'config');
+  /**
+   *
+   * @private
+   */
+  _initWatcher() {
+    const configDir = Config._getConfigDir('config');
+
+    watch.watchTree(configDir, (f, curr, prev) => {
+      if (typeof f == "object" && prev === null && curr === null) {
+        return;
+      }
+
+      this[CONFIG$] = Config._loadConfig();
+      _.each(this.autoloaders, fn => fn(this));
+
+      this.emit('reload');
+    });
+  }
+
+  /**
+   *
+   * @returns {*}
+   * @private
+   */
+  static _getConfigDir(dirName) {
+    const dir = path.join(process.cwd(), dirName);
+
     if (dir.indexOf('.') === 0) {
       return path.join(process.cwd(), dir);
     }
-    
+
     return dir;
   }
 
@@ -55,9 +77,19 @@ module.exports = new class extends events.EventEmitter {
   autoload(schema) {
     const _schema = _.cloneDeep(schema);
     const load = () => {
-      _.each(_schema, (value, key) => {
-        schema[key] = this.get(value);
-      });
+      const keys = Object.keys(_schema);
+
+      for (const key of keys) {
+        const value = _.get(_schema, key);
+
+        if (_.isObject(value)) {
+          keys.push(...Object.keys(value).map((item) => `${key}.${item}`));
+
+          continue;
+        }
+
+        _.set(schema, key, this.get(value));
+      }
     };
 
     load();
@@ -77,12 +109,22 @@ module.exports = new class extends events.EventEmitter {
   }
 
   /**
+   * Alias of autoload
+   *
+   * @param schema
+   * @returns {*}
+   */
+  autoReload(schema) {
+    return this.autoload(schema);
+  }
+
+  /**
    *
    * @param path
    * @returns {*}
    */
   get(path) {
-    const value = _.get(CONFIG, path);
+    const value = _.get(this[CONFIG$], path);
 
     if (value === undefined) {
       throw new Error(`Not defined in the config: ${path}`);
