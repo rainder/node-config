@@ -74,7 +74,7 @@ module.exports = new class Config extends events.EventEmitter {
    * @param schema
    * @returns {*}
    */
-  autoload(schema) {
+  init(schema) {
     const _schema = _.cloneDeep(schema);
     const load = () => {
       const keys = Object.keys(_schema);
@@ -96,26 +96,6 @@ module.exports = new class Config extends events.EventEmitter {
     this.autoloaders.push(load);
 
     return schema;
-  }
-
-  /**
-   * Alias of autoload
-   *
-   * @param schema
-   * @returns {*}
-   */
-  autoreload(schema) {
-    return this.autoload(schema);
-  }
-
-  /**
-   * Alias of autoload
-   *
-   * @param schema
-   * @returns {*}
-   */
-  autoReload(schema) {
-    return this.autoload(schema);
   }
 
   /**

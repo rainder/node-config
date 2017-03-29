@@ -6,15 +6,18 @@ Basic autoreload wrapper for `config` module. Allows to change server configurat
 ```js
 const config = require('@rainder/config');
 
-const CONFIG = config.autoload({
-  password: 'server.password'
+const CONFIG = config.init({
+  PASSWORD: 'server.password',
+  SSL: {
+    ENABLE: 'server.ssl.enable',
+  },
 });
 
 config.on('reload', () => {
   console.log('config file is changed!');
   
   //credentials are updated
-  console.log(CONFIG.password);
+  console.log(CONFIG.PASSWORD);
   
   //standard way of retrieving config is supported
   //even though less preferable
