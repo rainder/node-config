@@ -13,7 +13,7 @@ const CONFIG = config.init({
   },
 });
 
-config.on('reload', () => {
+CONFIG.on('change', () => {
   console.log('config file is changed!');
   
   //credentials are updated
