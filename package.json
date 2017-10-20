@@ -2,7 +2,8 @@
   "name": "@rainder/config",
   "version": "0.1.1",
   "description": "Allows to change server configuration without restarting the service",
-  "main": "lib",
+  "main": "lib/",
+  "types": "lib/index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc"
