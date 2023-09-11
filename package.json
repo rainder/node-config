@@ -1,6 +1,6 @@
 {
   "name": "@rainder/config",
-  "version": "0.1.1",
+  "version": "1.0.0",
   "description": "Allows to change server configuration without restarting the service",
   "main": "index.js",
   "scripts": {
@@ -22,7 +22,14 @@
   "homepage": "https://github.com/rainder/node-config#readme",
   "dependencies": {
     "config": "^1.21.0",
-    "lodash": "^4.15.0",
-    "watch": "^1.0.2"
+    "lodash.clonedeep": "^4.5.0",
+    "lodash.foreach": "^4.5.0",
+    "lodash.get": "^4.4.2",
+    "lodash.isobject": "^3.0.2",
+    "lodash.merge": "^4.6.2",
+    "lodash.set": "^4.3.2"
+  },
+  "devDependencies": {
+    "js-yaml": "^4.1.0"
   }
 }

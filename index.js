@@ -1,11 +1,25 @@
 'use strict';
 
 const fs = require('fs');
-const _ = require('lodash');
 const path = require('path');
 const config = require('config');
 const events = require('events');
-const watch = require('watch');
+const get = require('lodash.get');
+const set = require('lodash.set');
+const cloneDeep = require('lodash.clonedeep');
+const merge = require('lodash.merge');
+const each = require('lodash.foreach');
+const isObject = require('lodash.isobject');
+
+
+const _ = {
+  merge,
+  get,
+  cloneDeep,
+  each,
+  set,
+  isObject,
+};
 
 const CONFIG$ = Symbol();
 const DIRS = ['config', 'config/local'];
@@ -17,7 +31,6 @@ module.exports = new class Config extends events.EventEmitter {
     this.autoloaders = [];
 
     this[CONFIG$] = Config._loadConfig();
-    this._initWatcher();
   }
 
   /**
@@ -29,29 +42,11 @@ module.exports = new class Config extends events.EventEmitter {
     DIRS.forEach((dir) => {
       const configDir = Config._getConfigDir(dir);
 
+      console.log(configDir)
       _.merge(result, config.util.loadFileConfigs(configDir));
     });
 
     return result;
-  }
-
-  /**
-   *
-   * @private
-   */
-  _initWatcher() {
-    const configDir = Config._getConfigDir('config');
-
-    watch.watchTree(configDir, (f, curr, prev) => {
-      if (typeof f == "object" && prev === null && curr === null) {
-        return;
-      }
-
-      this[CONFIG$] = Config._loadConfig();
-      _.each(this.autoloaders, fn => fn(this));
-
-      this.emit('reload');
-    });
   }
 
   /**
